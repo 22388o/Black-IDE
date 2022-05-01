@@ -173,7 +173,7 @@ jobs:
           repo-token: ${{ github.token }}
 
       - name: Upload Artifact To AWS S3
-        if: success()
+        if: ${{ needs.build-info.outputs.branch != 'master' }}
         uses: ObsidianLabs/s3-artifacts-action@master
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID}}
@@ -186,6 +186,7 @@ jobs:
   send-notification:
     needs: [build, build-info]
     runs-on: ubuntu-18.04
+    if: success()
     steps:
       - name: Discord Notification
         uses: ObsidianLabs/github-discord-bot@master
