@@ -17,7 +17,7 @@ env:
   project_build: eth
   project_project: eth
   project_name: Black IDE
-  project_build_script: yarn && REACT_APP_ENV=development yarn dist
+  project_build_script: yarn && yarn dist:staging
   os_matrix: '[\"macos-latest\", \"ubuntu-18.04\", \"windows-2019\"]'
   enable_auth: false
   premium_editor: ../premium-editor
@@ -32,6 +32,11 @@ jobs:
         run: |
           echo ::set-output name=BRANCH::${GITHUB_REF##*/}
           if [[ ${{ github.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo ::set-output name=VERSION::${GITHUB_REF##*[\/v]}
+            echo ::set-output name=BRANCH::master
+            echo "project_build_script=yarn && yarn dist" >> $GITHUB_ENV
+          fi
+          if [[ ${GITHUB_REF##*/} == 'master' ]]; then
             echo ::set-output name=VERSION::${GITHUB_REF##*[\/v]}
             echo ::set-output name=BRANCH::master
             echo "project_build_script=yarn && yarn dist" >> $GITHUB_ENV
@@ -162,6 +167,7 @@ jobs:
           github_token: ${{ github.token }}
 
       - name: Clean Up Build Assets
+        if: ${{ github.event_name == 'release' }}
         working-directory: studio/dist
         run: rm builder-debug.yml
 
